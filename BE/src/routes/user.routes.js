@@ -5,6 +5,8 @@ const { protect, restrictTo } = require('../middlewares/auth.middleware');
 const multer = require('multer');
 const upload = multer({ dest: 'src/uploads/' });
 
+router.use(protect);
+
 /**
  * @swagger
  * /api/v1/users/profile:
@@ -90,7 +92,5 @@ router.delete('/profile', deleteAccount);
  *         description: Forbidden - Admin access required
  */
 router.get('/', restrictTo('ADMIN'), getAllUsers);
-
-router.use(protect);
 
 module.exports = router;
