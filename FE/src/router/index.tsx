@@ -17,6 +17,7 @@ import { NotFoundPage } from '@/pages/NotFoundPage'
 // Protected Pages
 import { OrdersPage } from '@/pages/orders/OrdersPage'
 import { ProfilePage } from '@/pages/profile/ProfilePage'
+import { CartPage } from '@/pages/cart/CartPage'
 
 // Admin Pages
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
         children: [
           { path: 'orders', element: <OrdersPage /> },
           { path: 'profile', element: <ProfilePage /> },
+          { path: 'cart', element: <CartPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

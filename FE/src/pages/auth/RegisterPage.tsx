@@ -15,9 +15,9 @@ import type { ApiError } from '@/types/api.types'
 
 const registerSchema = z
   .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
+    fullName: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().min(1, 'Email is required').email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters').regex(/\d/, 'Password must contain at least one number'),
     confirmPassword: z.string().min(1, 'Please confirm your password'),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -41,7 +41,7 @@ export function RegisterPage() {
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
+      fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -52,6 +52,8 @@ export function RegisterPage() {
     setIsLoading(true)
     try {
       const response = await AuthService.register(data)
+      const { user, token } = response.data.data
+
       toast.success(response.data.message || 'Registration successful! Please log in.')
       navigate('/auth/login')
     } catch (error) {
@@ -82,10 +84,10 @@ export function RegisterPage() {
               type="text"
               placeholder="John Doe"
               leftIcon={<User className="h-4 w-4" />}
-              error={errors.name?.message}
+              error={errors.fullName?.message}
               required
               disabled={isLoading}
-              {...register('name')}
+              {...register('fullName')}
             />
 
             <Input

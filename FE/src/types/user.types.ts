@@ -1,16 +1,14 @@
 /**
  * ALTERA — User Types
  */
-import type { UserRole, Address, CloudinaryImage } from './common.types'
 
 export interface User {
   _id: string
-  name: string
+  id: string
+  fullName: string
   email: string
-  role: UserRole
-  avatar?: CloudinaryImage
-  phone?: string
-  address?: Address
+  avatar: string | null
+  role: 'USER' | 'ADMIN'
   createdAt: string
   updatedAt: string
 }
@@ -28,16 +26,14 @@ export interface LoginPayload {
 }
 
 export interface RegisterPayload {
-  name: string
+  fullName: string
   email: string
   password: string
-  confirmPassword: string
 }
 
 export interface UpdateProfilePayload {
-  name?: string
-  phone?: string
-  address?: Address
+  fullName?: string
+  avatar?: File
 }
 
 export interface ChangePasswordPayload {

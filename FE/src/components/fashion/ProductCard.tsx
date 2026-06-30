@@ -3,6 +3,10 @@ import { Heart, ShoppingBag } from 'lucide-react'
 import type { Product } from '@/types/product.types'
 import { formatPrice } from '@/utils/format'
 import { cn } from '@/utils/cn'
+import { CartService } from '@/services/cart.api'
+import { useCartStore } from '@/store/cartStore'
+import { toast } from 'sonner'
+import { useState } from 'react'
 
 interface ProductCardProps {
   product: Product
@@ -10,7 +14,26 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, className }: ProductCardProps) {
-  const imageUrl = product.images?.[0]?.url || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80'
+  const imageUrl = product.imageUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&auto=format&fit=crop&q=80'
+  const { fetchCart } = useCartStore()
+  const [adding, setAdding] = useState(false)
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (adding) return
+
+    try {
+      setAdding(true)
+      await CartService.addToCart({ productId: product._id, quantity: 1 })
+      await fetchCart()
+      toast.success('Added to cart successfully.')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Failed to add to cart')
+    } finally {
+      setAdding(false)
+    }
+  }
 
   return (
     <div
@@ -22,20 +45,12 @@ export function ProductCard({ product, className }: ProductCardProps) {
       {/* Image Container */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-[var(--color-muted)]">
         <Link to={`/products/${product._id}`} aria-label={`View details of ${product.name}`}>
-          <img
-            src={imageUrl}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-          />
+          <div className="flex h-full w-full items-center justify-center bg-[var(--color-muted)] text-sm font-medium text-[var(--color-muted-foreground)]">
+            Upload image
+          </div>
         </Link>
 
-        {/* Quick Badges / Actions */}
-        {product.originalPrice && product.originalPrice > product.price && (
-          <span className="absolute left-3 top-3 bg-[var(--color-accent)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--color-accent-foreground)] rounded-[var(--radius-sm)]">
-            Sale
-          </span>
-        )}
+
 
         <div className="absolute bottom-4 right-4 flex flex-col gap-2 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <button
@@ -47,10 +62,16 @@ export function ProductCard({ product, className }: ProductCardProps) {
           </button>
           <button
             type="button"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-background)] text-[var(--color-foreground)] border border-[var(--color-border)] shadow-sm hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)] hover:border-transparent transition-colors"
+            onClick={handleAddToCart}
+            disabled={adding}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--color-background)] text-[var(--color-foreground)] border border-[var(--color-border)] shadow-sm hover:bg-[var(--color-primary)] hover:text-[var(--color-primary-foreground)] hover:border-transparent transition-colors disabled:opacity-50"
             aria-label="Quick Add to Cart"
           >
-            <ShoppingBag className="h-4.5 w-4.5" />
+            {adding ? (
+              <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <ShoppingBag className="h-4.5 w-4.5" />
+            )}
           </button>
         </div>
       </div>
@@ -70,11 +91,6 @@ export function ProductCard({ product, className }: ProductCardProps) {
         </div>
         <div className="mt-1 flex items-center justify-between text-xs text-[var(--color-muted-foreground)]">
           <span>{product.category}</span>
-          {product.originalPrice && product.originalPrice > product.price && (
-            <span className="line-through text-xs font-normal">
-              {formatPrice(product.originalPrice)}
-            </span>
-          )}
         </div>
       </div>
     </div>

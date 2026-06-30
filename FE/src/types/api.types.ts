@@ -3,6 +3,8 @@
  * Matches the backend response envelope from BE/src/app.js
  */
 
+import type { Product } from './product.types'
+
 // ── Base response wrapper ──────────────────────────────────────────────────
 
 export interface ApiResponse<T = unknown> {
@@ -19,6 +21,16 @@ export interface PaginatedResponse<T = unknown> {
     page: number
     limit: number
     total: number
+    totalPages: number
+  }
+}
+
+export interface ProductsResponse {
+  products: Product[]
+  pagination: {
+    total: number
+    page: number
+    limit: number
     totalPages: number
   }
 }
