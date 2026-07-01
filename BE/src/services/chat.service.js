@@ -4,11 +4,19 @@ const { GEMINI_API_KEY } = require('../config/env');
 const logger = require('../utils/logger');
 
 let genAI = null;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
 const getGenAI = () => {
   if (!genAI && GEMINI_API_KEY) {
+    console.log('Gemini key exists:', true);
+    console.log('Gemini key prefix:', `${GEMINI_API_KEY.substring(0, 8)}...`);
     genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   }
+
+  if (!GEMINI_API_KEY) {
+    logger.warn('Gemini API key not configured or missing. Using fallback response.');
+  }
+
   return genAI;
 };
 
@@ -112,14 +120,28 @@ const generateAIResponse = async (userMessage, messageHistory, topic = 'general'
   try {
     const systemPrompt = getSystemPrompt(topic);
 
-    const conversationHistory = messageHistory
-      .slice(-10)
-      .map((msg) => ({
-        role: msg.sender === 'USER' ? 'user' : 'model',
-        parts: [{ text: msg.text }],
-      }));
+    console.log('Gemini key exists:', !!GEMINI_API_KEY);
+    console.log('Using Gemini model:', GEMINI_MODEL);
+    console.log('Using system prompt for topic:', topic);
 
-    const model = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const recentHistory = messageHistory.slice(-10);
+    const historyWithoutCurrent =
+      recentHistory.length > 0 && recentHistory[recentHistory.length - 1].sender === 'USER'
+        ? recentHistory.slice(0, -1)
+        : recentHistory;
+
+    const conversationHistory = [
+      {
+        role: 'system',
+        parts: [{ text: systemPrompt }],
+      },
+      ...historyWithoutCurrent.map((msg) => ({
+        role: msg.sender === 'USER' ? 'user' : 'assistant',
+        parts: [{ text: msg.text }],
+      })),
+    ];
+
+    const model = client.getGenerativeModel({ model: GEMINI_MODEL });
     const chat = model.startChat({
       history: conversationHistory,
       generationConfig: {
@@ -127,7 +149,7 @@ const generateAIResponse = async (userMessage, messageHistory, topic = 'general'
       },
     });
 
-    const prompt = `${systemPrompt}\n\nUser: ${userMessage}`;
+    const prompt = userMessage;
 
     if (options.stream && typeof options.onChunk === 'function') {
       const resultStream = await chat.sendMessageStream(prompt);
@@ -149,7 +171,14 @@ const generateAIResponse = async (userMessage, messageHistory, topic = 'general'
 
     return text || 'I understand. Tell me more about this.';
   } catch (error) {
-    logger.error(`Chat AI service error: ${error.message}`);
+    console.error('========== GEMINI ERROR ==========');
+    console.error(error);
+    console.error('Message:', error?.message);
+    console.error('Gemini key exists:', !!GEMINI_API_KEY);
+    console.error('Gemini key prefix:', GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 8)}...` : 'missing');
+
+    logger.error('Chat AI service error: %s', error?.message || 'Unknown error');
+    logger.error(error);
     return getFallbackResponse(userMessage, topic);
   }
 };
