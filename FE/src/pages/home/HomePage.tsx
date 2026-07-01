@@ -9,69 +9,56 @@ import { ProductService } from '@/services/product.api'
 import type { Product } from '@/types/product.types'
 
 // Mock products to display as fallback if the backend is down or empty
-const MOCK_PRODUCTS: Product[] = [
-  {
-    _id: 'mock-1',
-    name: 'Classic Wool Trench Coat',
-    description: 'A timeless double-breasted trench coat crafted from premium wool blend.',
-    price: 3450000,
-    originalPrice: 4200000,
-    category: 'JACKET',
-    gender: 'UNISEX',
-    images: [{ url: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&auto=format&fit=crop&q=80', publicId: 'mock-1-img' }],
-    variants: [],
-    tags: ['featured', 'winter'],
-    isActive: true,
-    isFeatured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    _id: 'mock-2',
-    name: 'Oversized Organic Cotton Tee',
-    description: 'Breathable, minimal t-shirt made from 100% organic cotton.',
-    price: 490000,
-    category: 'T-SHIRT',
-    gender: 'UNISEX',
-    images: [{ url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80', publicId: 'mock-2-img' }],
-    variants: [],
-    tags: ['featured', 'summer'],
-    isActive: true,
-    isFeatured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    _id: 'mock-3',
-    name: 'Minimalist Leather Boots',
-    description: 'Handcrafted leather boots with lightweight sole.',
-    price: 2890000,
-    category: 'SHOES',
-    gender: 'MEN',
-    images: [{ url: 'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=800&auto=format&fit=crop&q=80', publicId: 'mock-3-img' }],
-    variants: [],
-    tags: ['featured'],
-    isActive: true,
-    isFeatured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    _id: 'mock-4',
-    name: 'Signature Canvas Tote Bag',
-    description: 'Durable canvas tote bag with leather straps and raw accents.',
-    price: 750000,
-    category: 'BAG',
-    gender: 'WOMEN',
-    images: [{ url: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80', publicId: 'mock-4-img' }],
-    variants: [],
-    tags: ['featured'],
-    isActive: true,
-    isFeatured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
-]
+// const MOCK_PRODUCTS: Product[] = [
+//   {
+//     _id: 'mock-1',
+//     name: 'Classic Wool Trench Coat',
+//     description: 'A timeless double-breasted trench coat crafted from premium wool blend.',
+//     price: 3450000,
+//     category: 'SHIRT',
+//     imageUrl: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=800&auto=format&fit=crop&q=80',
+//     stock: 50,
+//     isActive: true,
+//     createdAt: new Date().toISOString(),
+//     updatedAt: new Date().toISOString()
+//   },
+//   {
+//     _id: 'mock-2',
+//     name: 'Oversized Organic Cotton Tee',
+//     description: 'Breathable, minimal t-shirt made from 100% organic cotton.',
+//     price: 490000,
+//     category: 'SHIRT',
+//     imageUrl: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
+//     stock: 50,
+//     isActive: true,
+//     createdAt: new Date().toISOString(),
+//     updatedAt: new Date().toISOString()
+//   },
+//   {
+//     _id: 'mock-3',
+//     name: 'Minimalist Leather Boots',
+//     description: 'Handcrafted leather boots with lightweight sole.',
+//     price: 2890000,
+//     category: 'SHOES',
+//     imageUrl: 'https://images.unsplash.com/photo-1520639888713-7851133b1ed0?w=800&auto=format&fit=crop&q=80',
+//     stock: 50,
+//     isActive: true,
+//     createdAt: new Date().toISOString(),
+//     updatedAt: new Date().toISOString()
+//   },
+//   {
+//     _id: 'mock-4',
+//     name: 'Signature Canvas Tote Bag',
+//     description: 'Durable canvas tote bag with leather straps and raw accents.',
+//     price: 750000,
+//     category: 'ACCESSORY',
+//     imageUrl: 'https://images.unsplash.com/photo-1544816155-12df9643f363?w=800&auto=format&fit=crop&q=80',
+//     stock: 50,
+//     isActive: true,
+//     createdAt: new Date().toISOString(),
+//     updatedAt: new Date().toISOString()
+//   }
+// ]
 
 export function HomePage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -80,9 +67,9 @@ export function HomePage() {
   useEffect(() => {
     async function fetchFeaturedProducts() {
       try {
-        const response = await ProductService.getProducts({ featured: true, limit: 4 })
-        if (response.data?.data && response.data.data.length > 0) {
-          setProducts(response.data.data)
+        const response = await ProductService.getProducts({ limit: 4 })
+        if (response.data?.data?.products && response.data.data.products.length > 0) {
+          setProducts(response.data.data.products)
         } else {
           setProducts(MOCK_PRODUCTS)
         }
@@ -277,15 +264,15 @@ export function HomePage() {
           <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="flex flex-col space-y-4">
-                    <div className="aspect-[3/4] w-full animate-pulse rounded-[var(--radius-md)] bg-zinc-300 dark:bg-zinc-800" />
-                    <div className="h-4 w-2/3 animate-pulse bg-zinc-300 dark:bg-zinc-800" />
-                    <div className="h-4 w-1/3 animate-pulse bg-zinc-300 dark:bg-zinc-800" />
-                  </div>
-                ))
+                <div key={i} className="flex flex-col space-y-4">
+                  <div className="aspect-[3/4] w-full animate-pulse rounded-[var(--radius-md)] bg-zinc-300 dark:bg-zinc-800" />
+                  <div className="h-4 w-2/3 animate-pulse bg-zinc-300 dark:bg-zinc-800" />
+                  <div className="h-4 w-1/3 animate-pulse bg-zinc-300 dark:bg-zinc-800" />
+                </div>
+              ))
               : products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
+                <ProductCard key={product._id} product={product} />
+              ))}
           </div>
         </div>
       </section>

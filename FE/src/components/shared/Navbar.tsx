@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -49,6 +49,13 @@ export function Navbar() {
     logout()
     navigate('/')
   }
+
+  // Fetch cart data on mount so badge is in sync globally
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      useCartStore.getState().fetchCart()
+    }
+  }, [isAuthenticated])
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-[var(--color-background)]/90 backdrop-blur-md border-b border-[var(--color-border)]">
@@ -102,20 +109,22 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
+            asChild
             aria-label={`Cart — ${totalItems} items`}
-            onClick={() => setCartOpen(true)}
             className="relative"
           >
-            <ShoppingBag className="h-4 w-4" />
-            {totalItems > 0 && (
-              <Badge
-                variant="accent"
-                className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] flex items-center justify-center"
-                aria-hidden="true"
-              >
-                {totalItems > 99 ? '99+' : totalItems}
-              </Badge>
-            )}
+            <Link to="/cart">
+              <ShoppingBag className="h-4 w-4" />
+              {totalItems > 0 && (
+                <Badge
+                  variant="accent"
+                  className="absolute -top-1 -right-1 h-4 min-w-4 px-1 text-[10px] flex items-center justify-center"
+                  aria-hidden="true"
+                >
+                  {totalItems > 99 ? '99+' : totalItems}
+                </Badge>
+              )}
+            </Link>
           </Button>
 
           {/* Auth */}

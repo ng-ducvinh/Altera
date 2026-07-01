@@ -1,20 +1,10 @@
 /**
  * ALTERA — Product Types
  */
-import type { CloudinaryImage, QueryParams } from './common.types'
+import type { QueryParams } from './common.types'
 
-export type ProductCategory =
-  | 'T-SHIRT'
-  | 'SHIRT'
-  | 'PANTS'
-  | 'DRESS'
-  | 'JACKET'
-  | 'SHOES'
-  | 'ACCESSORIES'
-  | 'BAG'
-
+/* 
 export type ProductSize = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | 'XXXL'
-
 export type ProductGender = 'MEN' | 'WOMEN' | 'UNISEX'
 
 export interface ProductVariant {
@@ -23,22 +13,17 @@ export interface ProductVariant {
   stock: number
   sku?: string
 }
+*/
 
 export interface Product {
   _id: string
   name: string
-  description: string
+  category: 'SHIRT' | 'PANTS' | 'SHOES' | 'ACCESSORY'
   price: number
-  originalPrice?: number
-  category: ProductCategory
-  gender: ProductGender
-  images: CloudinaryImage[]
-  variants: ProductVariant[]
-  tags: string[]
+  imageUrl: string
+  description: string
+  stock: number
   isActive: boolean
-  isFeatured: boolean
-  rating?: number
-  reviewCount?: number
   createdAt: string
   updatedAt: string
 }
@@ -54,13 +39,9 @@ export interface ProductReview {
 
 // ── Filters ────────────────────────────────────────────────────────────────
 
-export interface ProductFilters extends QueryParams {
-  category?: ProductCategory
-  gender?: ProductGender
-  minPrice?: number
-  maxPrice?: number
-  size?: ProductSize
-  tags?: string[]
+export interface ProductFilters {
+  category?: 'SHIRT' | 'PANTS' | 'SHOES' | 'ACCESSORY'
   search?: string
-  featured?: boolean
+  page?: number
+  limit?: number
 }
