@@ -83,6 +83,60 @@ router.post('/recommend', recommend);
 
 /**
  * @swagger
+ * /api/v1/outfits/print:
+ *   post:
+ *     summary: Generate a print-ready fashion image using AI
+ *     tags:
+ *       - Outfits
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 example: "A vibrant floral print for a summer tee"
+ *               style:
+ *                 type: string
+ *                 example: "Boho"
+ *               shirtType:
+ *                 type: string
+ *                 example: "T-shirt"
+ *               colorPalette:
+ *                 type: string
+ *                 example: "Warm sunset tones"
+ *               textOverlay:
+ *                 type: string
+ *                 example: "Live in color"
+ *     responses:
+ *       200:
+ *         description: AI generated print image returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     imageData:
+ *                       type: string
+ *                       description: Base64 encoded PNG image data URI
+ *       400:
+ *         description: Invalid prompt
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/print', generatePrint);
+
+/**
+ * @swagger
  * /api/v1/outfits/history:
  *   get:
  *     summary: Get outfit recommendation history of current user

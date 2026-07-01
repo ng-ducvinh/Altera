@@ -2,6 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { GEMINI_API_KEY } = require('../config/env');
 const logger = require('../utils/logger');
 
+const GEMINI_IMAGE_MODEL = process.env.GEMINI_IMAGE_MODEL || 'gemini-1.5-image';
 let genAI = null;
 
 const getGenAI = () => {
@@ -104,6 +105,46 @@ Respond in this exact JSON format:
   }
 };
 
+const generatePrintImage = async (prompt) => {
+  const client = getGenAI();
+  if (!client) {
+    logger.warn('Gemini API key not configured. Print image generation unavailable.');
+    throw new Error('Gemini API key not configured.');
+  }
+
+  try {
+    const model = client.getGenerativeModel({ model: GEMINI_IMAGE_MODEL });
+    const result = await model.generateContent(prompt);
+    const candidate = result?.response?.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+
+    const inlineDataPart = parts.find((part) => part.inlineData);
+    if (inlineDataPart && inlineDataPart.inlineData) {
+      return {
+        mimeType: inlineDataPart.inlineData.mimeType || 'image/png',
+        data: inlineDataPart.inlineData.data,
+      };
+    }
+
+    const textPart = parts.find((part) => part.text && part.text.trim().length > 0);
+    if (textPart && textPart.text) {
+      const base64Match = textPart.text.match(/([A-Za-z0-9+/=\r\n]+)/);
+      if (base64Match) {
+        return {
+          mimeType: 'image/png',
+          data: base64Match[0].replace(/\s+/g, ''),
+        };
+      }
+    }
+
+    throw new Error('No image data returned from Gemini model.');
+  } catch (error) {
+    logger.error('Print image AI service error: %s', error?.message || 'Unknown error');
+    logger.error(error);
+    throw error;
+  }
+};
+
 /**
  * Fallback when AI is unavailable
  */
@@ -135,6 +176,7 @@ const normalizeOutfitHistoryEntry = (entry) => {
 
 module.exports = {
   generateOutfitRecommendation,
+  generatePrintImage,
   buildCatalogPromptSection,
   normalizeOutfitHistoryEntry,
 };

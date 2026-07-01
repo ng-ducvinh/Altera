@@ -1,6 +1,6 @@
 const OutfitRecommendation = require('../models/OutfitRecommendation');
 const Product = require('../models/Product');
-const { generateOutfitRecommendation, normalizeOutfitHistoryEntry } = require('../services/ai.service');
+const { generateOutfitRecommendation, normalizeOutfitHistoryEntry, generatePrintImage } = require('../services/ai.service');
 
 const recommend = async (req, res, next) => {
   try {
@@ -48,6 +48,49 @@ const recommend = async (req, res, next) => {
   }
 };
 
+const generatePrint = async (req, res, next) => {
+  try {
+    const { prompt, style, shirtType, colorPalette, textOverlay } = req.body;
+
+    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+      const error = new Error('Prompt is required to generate a print image.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const promptPieces = [
+      'Create a high-quality fashion print design suitable for screen printing or direct-to-garment printing on a shirt.',
+      `Design prompt: ${prompt.trim()}.`,
+    ];
+
+    if (style) {
+      promptPieces.push(`Style reference: ${style}.`);
+    }
+    if (shirtType) {
+      promptPieces.push(`Shirt type: ${shirtType}.`);
+    }
+    if (colorPalette) {
+      promptPieces.push(`Preferred color palette: ${colorPalette}.`);
+    }
+    if (textOverlay) {
+      promptPieces.push(`Text overlay suggestion: ${textOverlay}.`);
+    }
+
+    promptPieces.push('Return only the base64 encoded PNG image data without additional explanation.');
+
+    const imageResult = await generatePrintImage(promptPieces.join(' '));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        imageData: `data:${imageResult.mimeType};base64,${imageResult.data}`,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getHistory = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
@@ -72,4 +115,4 @@ const getHistory = async (req, res, next) => {
   }
 };
 
-module.exports = { recommend, getHistory };
+module.exports = { recommend, getHistory, generatePrint };
